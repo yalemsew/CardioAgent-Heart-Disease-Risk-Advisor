@@ -1,0 +1,44 @@
+{
+  "features": [
+    "ap_hi",
+    "cholesterol",
+    "age_years"
+  ],
+  "shape": [
+    32,
+    16
+  ],
+  "chromosome": [
+    1,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    0
+  ],
+  "validation_fitness": 0.7938207680315288,
+  "threshold": 0.36,
+  "test_metrics": {
+    "n_features": 3.0,
+    "accuracy": 0.71,
+    "precision": 0.677,
+    "recall": 0.79,
+    "f1": 0.729,
+    "roc_auc": 0.789
+  },
+  "ga_settings": {
+    "population": 20,
+    "generations": 15,
+    "elite": 2,
+    "crossover_rate": 0.9,
+    "mutation_rate": 0.05,
+    "feature_penalty": 0.002
+  }
+}

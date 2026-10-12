@@ -1,0 +1,140 @@
+{
+  "k": 4,
+  "features": [
+    "ap_hi",
+    "ap_lo",
+    "cholesterol",
+    "gluc",
+    "smoke",
+    "alco",
+    "active",
+    "age_years",
+    "bmi",
+    "is_male"
+  ],
+  "centres_scaled": [
+    [
+      1.002599,
+      0.910703,
+      0.222573,
+      -0.258377,
+      -0.30256,
+      -0.108848,
+      0.017207,
+      0.327476,
+      0.577085,
+      -0.103515
+    ],
+    [
+      -0.553286,
+      -0.501149,
+      -0.367474,
+      -0.324892,
+      -0.310864,
+      -0.180888,
+      -0.016736,
+      -0.202775,
+      -0.324948,
+      -0.116746
+    ],
+    [
+      0.044152,
+      0.0533,
+      -0.063582,
+      -0.127557,
+      2.875781,
+      1.446865,
+      0.080613,
+      -0.162844,
+      -0.133693,
+      1.140515
+    ],
+    [
+      0.183083,
+      0.145419,
+      1.48378,
+      2.686895,
+      -0.201007,
+      -0.088269,
+      -0.034336,
+      0.356732,
+      0.297256,
+      -0.163638
+    ]
+  ],
+  "groups": [
+    {
+      "cluster": 0,
+      "name": "High blood pressure & overweight",
+      "n_patients": 13158,
+      "disease_rate": 0.7871,
+      "average_patient": {
+        "ap_hi": 143.47,
+        "ap_lo": 89.94,
+        "cholesterol": 1.51,
+        "gluc": 1.08,
+        "smoke": 0.0,
+        "alco": 0.03,
+        "active": 0.81,
+        "age_years": 55.52,
+        "bmi": 30.44,
+        "is_male": 0.3
+      }
+    },
+    {
+      "cluster": 1,
+      "name": "Lower-risk baseline",
+      "n_patients": 25747,
+      "disease_rate": 0.3289,
+      "average_patient": {
+        "ap_hi": 117.49,
+        "ap_lo": 76.61,
+        "cholesterol": 1.11,
+        "gluc": 1.04,
+        "smoke": 0.0,
+        "alco": 0.01,
+        "active": 0.8,
+        "age_years": 51.94,
+        "bmi": 25.77,
+        "is_male": 0.29
+      }
+    },
+    {
+      "cluster": 2,
+      "name": "Smokers & drinkers",
+      "n_patients": 4494,
+      "disease_rate": 0.4584,
+      "average_patient": {
+        "ap_hi": 127.48,
+        "ap_lo": 81.85,
+        "cholesterol": 1.32,
+        "gluc": 1.15,
+        "smoke": 0.9,
+        "alco": 0.38,
+        "active": 0.84,
+        "age_years": 52.22,
+        "bmi": 26.76,
+        "is_male": 0.89
+      }
+    },
+    {
+      "cluster": 3,
+      "name": "High cholesterol & sugar",
+      "n_patients": 4592,
+      "disease_rate": 0.6226,
+      "average_patient": {
+        "ap_hi": 129.78,
+        "ap_lo": 82.71,
+        "cholesterol": 2.37,
+        "gluc": 2.76,
+        "smoke": 0.03,
+        "alco": 0.03,
+        "active": 0.79,
+        "age_years": 55.72,
+        "bmi": 28.99,
+        "is_male": 0.27
+      }
+    }
+  ],
+  "validation_auc_profile_only": 0.7088
+}

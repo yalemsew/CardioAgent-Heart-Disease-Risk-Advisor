@@ -1,0 +1,86 @@
+{
+  "thresholds": {
+    "full": 0.41,
+    "quick": 0.36
+  },
+  "test_metrics": {
+    "Full assessment (10 features)": {
+      "threshold": 0.41,
+      "accuracy": 0.7158,
+      "precision": 0.6848,
+      "recall": 0.7885,
+      "roc_auc": 0.7941
+    },
+    "Quick screening (3 features)": {
+      "threshold": 0.36,
+      "accuracy": 0.71,
+      "precision": 0.6774,
+      "recall": 0.7903,
+      "roc_auc": 0.7893
+    }
+  },
+  "planning": {
+    "flagged_test_patients": 5859,
+    "sample": 1000,
+    "reached_goal_rate": 0.664,
+    "mean_risk_before": 0.7053,
+    "mean_risk_after": 0.3892,
+    "median_cost_goal_plans": 4.0,
+    "mean_states_explored": 12.9,
+    "action_usage": {
+      "lower_bp": 0.724,
+      "lower_chol": 0.364,
+      "lose_weight": 0.353,
+      "be_active": 0.176
+    }
+  },
+  "safety_check_validation": [
+    {
+      "healthy change": "Lower BP by 10/5",
+      "patients": 4217,
+      "average risk change": -0.1273,
+      "% where model says risk goes UP": 1.3991
+    },
+    {
+      "healthy change": "Cholesterol down 1 level",
+      "patients": 2568,
+      "average risk change": -0.0775,
+      "% where model says risk goes UP": 10.8645
+    },
+    {
+      "healthy change": "Become active",
+      "patients": 2010,
+      "average risk change": -0.048,
+      "% where model says risk goes UP": 11.0945
+    },
+    {
+      "healthy change": "BMI down 2",
+      "patients": 6269,
+      "average risk change": -0.0103,
+      "% where model says risk goes UP": 5.5192
+    },
+    {
+      "healthy change": "Quit smoking",
+      "patients": 894,
+      "average risk change": 0.0118,
+      "% where model says risk goes UP": 55.1454
+    },
+    {
+      "healthy change": "Quit alcohol",
+      "patients": 555,
+      "average risk change": 0.0415,
+      "% where model says risk goes UP": 70.6306
+    },
+    {
+      "healthy change": "Glucose down 1 level",
+      "patients": 1576,
+      "average risk change": 0.0208,
+      "% where model says risk goes UP": 69.099
+    }
+  ],
+  "what_if_corrected_by_rules": {
+    "corrected": 112,
+    "total": 619
+  },
+  "unhealthy_plans": 0
+}
