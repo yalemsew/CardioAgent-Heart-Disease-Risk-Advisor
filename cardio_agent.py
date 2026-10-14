@@ -5,7 +5,7 @@ The agent combines everything built so far:
   - Part 1: the full-feature MLP (10 features) -> full assessment + what-if
   - Part 3: the k-means patient profiles       -> explanation in plain words
   - a small medical KNOWLEDGE BASE            -> which changes are healthy, input limits
-  - uniform-cost SEARCH (Lecture 12)          -> cheapest lifestyle plan that lowers the risk
+  - uniform-cost SEARCH                       -> cheapest lifestyle plan that lowers the risk
 
 See 04_agent.ipynb for a step-by-step explanation.
 """

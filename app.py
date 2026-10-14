@@ -165,7 +165,7 @@ else:
     a.metric("Risk after the plan", f"{p['risk']:.0%}", f"{(p['risk'] - result['risk']) * 100:+.0f} points",
              delta_color="inverse")
     b.metric("Effort score", p["cost"], help="BP step 2 · cholesterol step 2 · weight step 2 · become active 1")
-    c.metric("Plans searched", p["states_explored"], help="Uniform-cost search (Lecture 12)")
+    c.metric("Plans searched", p["states_explored"], help="Number of states explored by the uniform-cost search")
 
 if result["guideline_advice"]:
     st.subheader("Also recommended by medical guidelines")
