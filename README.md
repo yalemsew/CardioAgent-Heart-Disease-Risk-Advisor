@@ -3,6 +3,9 @@
 CS582 Machine Learning group project. Predicts cardiovascular disease from routine checkup data
 (Kaggle Cardiovascular Disease dataset, 70,000 patients) and wraps the model in an intelligent agent.
 
+> **New to the project?** Start with [`docs/Project_Overview.md`](docs/Project_Overview.md): the whole project from beginning
+> to end in plain language.
+
 ## How to run
 
 **1. Set up (once).** You need Python 3.10 or newer. From inside the `cardio_project` folder, install the libraries:
@@ -75,6 +78,8 @@ install the libraries with `pip install -r requirements.txt`.
 | `01_cardio_basics.ipynb` | Part 1 — the full ML workflow, explained step by step |
 | `02_genetic_algorithm_design.ipynb` | Part 2 — GA chooses features + MLP shape |
 | `results/ga_best_design.json` | GA's winning design (created by Part 2) |
+| `docs/Project_Overview.md` | Plain-language overview of the whole project (start here) |
+| `docs/Team_Plan.md` | How the 5 team members split the project, presentation outline, timeline |
 | `docs/Part2_Genetic_Algorithm_Guide.md` | Study guide for Part 2 (diagrams, results, glossary, self-check) |
 | `03_patient_profiles.ipynb` | Part 3 — PCA, LDA, k-means and SOM find patient profiles |
 | `results/patient_profiles.json` | The 4 patient profiles (created by Part 3) |
@@ -431,3 +436,18 @@ for the same model (test recall 0.789). Both are valid; use one convention consi
 - The GA found that **blood pressure, cholesterol and age** carry almost all the predictive information. LDA (Part 3) picks the same three.
 - Unsupervised learning found four patient profiles with disease rates from 33% to 79%, and k-means and SOM agree on them.
 - The agent's plans bring average estimated risk from 71% to 39%; a knowledge base blocks advice the data gets wrong (e.g. "quitting smoking raises risk").
+
+## References
+
+1. Detrano, R., et al. (1989). International application of a new probability algorithm for the diagnosis of coronary
+   artery disease. *The American Journal of Cardiology*, 64(5), 304–310.
+   The origin of the UCI Heart Disease (Cleveland) dataset: a probability model built at one hospital and tested at
+   others. Shows the problem this project starts from: estimating heart disease risk from routine patient data.
+2. Weng, S. F., Reps, J., Kai, J., Garibaldi, J. M., & Qureshi, N. (2017). Can machine-learning improve cardiovascular
+   risk prediction using routine clinical data? *PLoS ONE*, 12(4), e0174944.
+   Compares random forest, logistic regression, gradient boosting and neural networks against the standard clinical risk
+   score on routine records; the neural network did best. Supports our choice of an MLP and our model comparison (Part 1).
+3. Dinh, A., Miertschin, S., Young, A., & Mohanty, S. D. (2019). A data-driven approach to predicting diabetes and
+   cardiovascular disease with machine learning. *BMC Medical Informatics and Decision Making*, 19, 211.
+   Predicts cardiovascular disease from survey and checkup data with several ML models and ranks which features matter
+   most. Compare with our GA (Part 2) and LDA (Part 3), which both find blood pressure, cholesterol and age.
