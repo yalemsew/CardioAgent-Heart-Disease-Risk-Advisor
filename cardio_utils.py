@@ -1,8 +1,4 @@
-"""Shared data preparation for the cardio project.
-
-These are the same steps explained one-by-one in 01_cardio_basics.ipynb (Steps 1-7),
-collected in one place so every notebook prepares the data in exactly the same way.
-"""
+"""Shared data loading, cleaning, splitting and scaling."""
 from pathlib import Path
 
 import pandas as pd
@@ -12,12 +8,9 @@ from sklearn.preprocessing import StandardScaler
 RANDOM_STATE = 42
 DATA_PATH = Path(__file__).parent / "data" / "cardio_train.csv"
 
-# Features the patient can realistically change (used by the agent's what-if analysis)
-MODIFIABLE = ["ap_hi", "ap_lo", "cholesterol", "gluc", "smoke", "alco", "active", "bmi"]
-
 
 def load_clean_data(path=DATA_PATH):
-    """Steps 1-4: load, remove impossible values, add age_years / bmi / is_male."""
+    """Load, remove impossible values, add age_years / bmi / is_male."""
     df = pd.read_csv(path, sep=";")
     keep = (
         df["ap_hi"].between(80, 250)
@@ -34,11 +27,7 @@ def load_clean_data(path=DATA_PATH):
 
 
 def split_and_scale(df):
-    """Steps 6-7: 70/15/15 stratified split, scaler fitted on TRAIN only.
-
-    Returns a dict with raw splits (X_train, ...), scaled splits (X_train_s, ...),
-    targets (y_train, ...), the fitted scaler, and the feature names.
-    """
+    """70/15/15 stratified split; scaler fitted on train only."""
     X = df.drop(columns=["cardio"])
     y = df["cardio"]
     X_train, X_temp, y_train, y_temp = train_test_split(
