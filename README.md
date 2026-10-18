@@ -437,6 +437,11 @@ for the same model (test recall 0.789). Both are valid; use one convention consi
 - Unsupervised learning found four patient profiles with disease rates from 33% to 79%, and k-means and SOM agree on them.
 - The agent's plans bring average estimated risk from 71% to 39%; a knowledge base blocks advice the data gets wrong (e.g. "quitting smoking raises risk").
 
+## Novelty and contributions
+
+1. **Neuro-symbolic safety layer :** the model predicted that quitting smoking *raises* risk, because it learned patterns in the data, not causes. So a knowledge base decides which changes are healthy, and the model only estimates how much they help. Smoking, alcohol and glucose advice comes from medical guidelines. Result: 0 of 1,000 test plans recommend an unhealthy change.
+2. **Model design by genetic algorithm:** a GA searched 8,192 feature/network designs (fitness = validation AUC − 0.002 × features) and found that 3 features (blood pressure, cholesterol, age) match the 10-feature model (test recall 0.790 vs 0.789), enabling a quick 3-value screening.
+3. **Unsupervised risk profiles:** k-means and a self-organising map found 4 patient groups with 33%–79% heart disease, which the agent uses to explain each prediction in plain words.
 ## References
 
 1. Detrano, R., et al. (1989). International application of a new probability algorithm for the diagnosis of coronary
