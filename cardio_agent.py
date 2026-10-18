@@ -1,14 +1,4 @@
-"""CardioAgent: a heart disease risk advisor (Part 4).
-
-The agent combines everything built so far:
-  - Part 2: the GA-designed MLP (3 features)  -> quick screening
-  - Part 1: the full-feature MLP (10 features) -> full assessment + what-if
-  - Part 3: the k-means patient profiles       -> explanation in plain words
-  - a small medical KNOWLEDGE BASE            -> which changes are healthy, input limits
-  - uniform-cost SEARCH                       -> cheapest lifestyle plan that lowers the risk
-
-See 04_agent.ipynb for a step-by-step explanation.
-"""
+"""CardioAgent: MLP risk models + medical knowledge base + uniform-cost search for lifestyle plans."""
 import heapq
 import json
 from pathlib import Path
@@ -22,32 +12,25 @@ from cardio_utils import RANDOM_STATE, load_clean_data, split_and_scale
 
 RESULTS = Path(__file__).parent / "results"
 
-# ----------------------------------------------------------------------------- knowledge base
-# Valid input ranges (the same limits used to clean the training data in Part 1).
 VALID_RANGES = {
     "age_years": (18, 100), "height_cm": (130, 210), "weight_kg": (35, 200),
     "ap_hi": (80, 250), "ap_lo": (40, 160),
 }
 CATEGORIES = {"cholesterol": {1, 2, 3}, "gluc": {1, 2, 3}, "smoke": {0, 1}, "alco": {0, 1},
               "active": {0, 1}, "is_male": {0, 1}}
-TRAINING_AGE_RANGE = (29, 65)          # ages seen in the dataset; outside this, predictions are less reliable
+TRAINING_AGE_RANGE = (29, 65)
 
 QUICK_INPUTS = ["age_years", "ap_hi", "cholesterol"]
 FULL_INPUTS = ["age_years", "is_male", "height_cm", "weight_kg", "ap_hi", "ap_lo",
                "cholesterol", "gluc", "smoke", "alco", "active"]
 
-# Lifestyle changes the planner may use. Each one moves the patient in the medically HEALTHY
-# direction, and the full model agrees it lowers risk on average (checked in 04_agent.ipynb).
-# cost = rough "effort" units, used by the search to prefer easier plans.
 MEASURABLE_ACTIONS = {
     "lower_bp":    {"cost": 2, "label": "Lower blood pressure by 10/5 mmHg (toward 120/80)"},
     "lower_chol":  {"cost": 2, "label": "Lower cholesterol by one level"},
     "lose_weight": {"cost": 2, "label": "Lose weight (BMI −2, toward 25)"},
     "be_active":   {"cost": 1, "label": "Become physically active"},
 }
-# Changes medicine clearly recommends, but where THIS dataset gives misleading associations
-# (the model predicts higher risk after the change). The agent recommends them from the
-# knowledge base and never uses the model's number for them.
+# Medically recommended, but the model wrongly predicts higher risk after them: advised from rules only.
 GUIDELINE_ONLY = {
     "smoke": "Stop smoking",
     "alco": "Reduce or stop alcohol",
@@ -73,14 +56,12 @@ class CardioAgent:
         self.features = data["features"]
         self.scaler = data["scaler"]
 
-        # --- full model: the Part 1 design, all 10 features ---
         self.full_model = MLPClassifier(hidden_layer_sizes=(16, 8), activation="relu",
                                         early_stopping=True, max_iter=300, random_state=RANDOM_STATE)
         self.full_model.fit(data["X_train_s"], data["y_train"])
         self.full_threshold = choose_threshold(
             data["y_val"], self.full_model.predict_proba(data["X_val_s"])[:, 1])
 
-        # --- quick model: the GA design from Part 2 ---
         ga = json.loads((RESULTS / "ga_best_design.json").read_text())
         self.quick_features = ga["features"]
         self.quick_cols = [self.features.index(f) for f in self.quick_features]
@@ -90,16 +71,13 @@ class CardioAgent:
         self.quick_threshold = choose_threshold(
             data["y_val"], self.quick_model.predict_proba(data["X_val_s"][:, self.quick_cols])[:, 1])
 
-        # --- patient profiles from Part 3 ---
         prof = json.loads((RESULTS / "patient_profiles.json").read_text())
         self.centres = np.array(prof["centres_scaled"])
         self.groups = {g["cluster"]: g for g in prof["groups"]}
-        self.baseline = min(prof["groups"], key=lambda g: g["disease_rate"])   # lowest-risk group
+        self.baseline = min(prof["groups"], key=lambda g: g["disease_rate"])
 
-        # typical values used to fill features the quick mode doesn't need (only for scaling)
         self.medians = data["X_train"].median()
 
-    # ------------------------------------------------------------------ PERCEIVE
     def perceive(self, patient):
         """Check the input. Returns (mode, errors, warnings)."""
         errors, warnings = [], []
@@ -128,7 +106,6 @@ class CardioAgent:
                             f"({TRAINING_AGE_RANGE[0]}–{TRAINING_AGE_RANGE[1]}); the estimate is less reliable.")
         return mode, errors, warnings
 
-    # ------------------------------------------------------------------ THINK: helpers
     def _row(self, p):
         """Patient dict -> one row of the 10 model features (raw units)."""
         return {
@@ -141,7 +118,7 @@ class CardioAgent:
 
     def _scaled(self, rows):
         df = pd.DataFrame(rows)[self.features].astype(float)
-        df = df.fillna(self.medians)          # only matters in quick mode, for unused columns
+        df = df.fillna(self.medians)
         return self.scaler.transform(df)
 
     def full_risk(self, rows):
@@ -161,19 +138,18 @@ class CardioAgent:
         x = self._scaled([row])[0]
         return self.groups[int(np.argmin(((self.centres - x) ** 2).sum(axis=1)))]
 
-    # ------------------------------------------------------------------ THINK: planning
     @staticmethod
     def _apply(row, height_cm, state):
         """Apply a plan to a patient row. state = (bp_steps, chol_steps, weight_steps, active)."""
         bp, chol, weight, active = state
         r = dict(row)
-        if bp:        # lower toward 120/80, never below it (and never raise a value already below)
+        if bp:
             r["ap_hi"] = max(row["ap_hi"] - 10 * bp, min(row["ap_hi"], 120))
             r["ap_lo"] = max(row["ap_lo"] - 5 * bp, min(row["ap_lo"], 80))
             r["ap_lo"] = min(r["ap_lo"], r["ap_hi"] - 10)
         if chol:
             r["cholesterol"] = row["cholesterol"] - chol
-        if weight:    # lower BMI toward 25, never below it
+        if weight:
             r["bmi"] = max(row["bmi"] - 2 * weight, min(row["bmi"], 25.0))
         if active:
             r["active"] = 1
@@ -183,9 +159,9 @@ class CardioAgent:
     def _max_steps(row):
         """How many steps of each change make sense for this patient (0 = not applicable)."""
         return (
-            max(0, int(np.ceil((row["ap_hi"] - 120) / 10))),     # BP steps until 120
-            row["cholesterol"] - 1,                              # levels until normal (1)
-            max(0, int(np.ceil((row["bmi"] - 25) / 2))),         # BMI steps until 25
+            max(0, int(np.ceil((row["ap_hi"] - 120) / 10))),
+            row["cholesterol"] - 1,
+            max(0, int(np.ceil((row["bmi"] - 25) / 2))),
             0 if row["active"] == 1 else 1,
         )
 
@@ -207,13 +183,7 @@ class CardioAgent:
         return out
 
     def plan(self, row, height_cm):
-        """Uniform-cost search for the cheapest plan that brings risk below the threshold.
-
-        State  = how many steps of each change are applied: (bp, cholesterol, weight, active).
-        Action = one more step of one change (only if it still makes sense for this patient).
-        Cost   = sum of effort units.  Goal = full-model risk < threshold.
-        Returns the goal plan, or (if no plan reaches the goal) the plan with the lowest risk.
-        """
+        """Uniform-cost search over (bp, chol, weight, active) steps for the cheapest plan with risk < threshold."""
         max_steps = self._max_steps(row)
         action_index = {"lower_bp": 0, "lower_chol": 1, "lose_weight": 2, "be_active": 3}
 
@@ -224,18 +194,18 @@ class CardioAgent:
             return risk_cache[state]
 
         start = (0, 0, 0, 0)
-        frontier = [(0, risk_of(start), start, [])]        # (cost, risk, state, actions taken)
+        frontier = [(0, risk_of(start), start, [])]
         best_seen = (risk_of(start), 0, start, [])
         visited = set()
 
         while frontier:
-            cost, risk, state, actions = heapq.heappop(frontier)   # cheapest plan first
+            cost, risk, state, actions = heapq.heappop(frontier)
             if state in visited:
                 continue
             visited.add(state)
             if risk < best_seen[0]:
                 best_seen = (risk, cost, state, actions)
-            if risk < self.full_threshold:                          # GOAL reached
+            if risk < self.full_threshold:
                 return {"reached_goal": True, "cost": cost, "risk": risk,
                         "actions": actions, "state": state, "states_explored": len(visited)}
             for name, i in action_index.items():
@@ -249,7 +219,6 @@ class CardioAgent:
         return {"reached_goal": False, "cost": cost, "risk": risk,
                 "actions": actions, "state": state, "states_explored": len(visited)}
 
-    # ------------------------------------------------------------------ ACT
     def assess(self, patient):
         """Run the full perceive -> think -> act cycle. Returns a dict (see report())."""
         mode, errors, warnings = self.perceive(patient)
@@ -270,7 +239,6 @@ class CardioAgent:
                       level=self.risk_level(risk, self.full_threshold),
                       profile=group, bmi=row["bmi"])
 
-        # factors that differ most from the lowest-risk group (simple explanation)
         base = self.baseline["average_patient"]
         factors = []
         if row["ap_hi"] >= 130:
@@ -286,17 +254,16 @@ class CardioAgent:
             factors.append(f"age {patient['age_years']} (risk rises with age; not changeable)")
         result["factors"] = factors
 
-        # what-if: each measurable change on its own, made in full (e.g. BP all the way to 120/80)
         single = []
         max_steps = self._max_steps(row)
         for i in range(4):
             if max_steps[i] == 0:
-                continue                              # not applicable (e.g. cholesterol already normal)
+                continue
             state = [0, 0, 0, 0]; state[i] = max_steps[i]
             changed = self._apply(row, patient["height_cm"], tuple(state))
             new_risk = float(self.full_risk([changed])[0])
-            corrected = new_risk > risk               # model says a HEALTHY change raises risk
-            new_risk = min(new_risk, risk)            # knowledge base: never show a healthy change as harmful
+            corrected = new_risk > risk
+            new_risk = min(new_risk, risk)
             single.append((self.describe_changes(row, changed, patient["height_cm"])[0], new_risk, corrected))
         result["what_if"] = sorted(single, key=lambda item: item[1])
 

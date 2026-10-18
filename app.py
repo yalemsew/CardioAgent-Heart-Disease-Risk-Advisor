@@ -1,11 +1,4 @@
-"""CardioAgent demo app (Part 5).
-
-Run from the cardio_project folder:
-    streamlit run app.py
-
-The app is only a user interface: every number comes from CardioAgent (cardio_agent.py),
-the same agent built and tested in 04_agent.ipynb.
-"""
+"""CardioAgent demo app. Run: streamlit run app.py"""
 import altair as alt
 import pandas as pd
 import streamlit as st
@@ -14,7 +7,6 @@ from cardio_agent import CardioAgent, DISCLAIMER
 
 st.set_page_config(page_title="CardioAgent", page_icon="❤️", layout="wide")
 
-# Example patients for the presentation (same ones used in 04_agent.ipynb)
 EXAMPLES = {
     "— enter your own values —": None,
     "50-year-old man, smoker, BP 135/85": dict(age_years=50, is_male=1, height_cm=175, weight_kg=90, ap_hi=135,
@@ -31,17 +23,14 @@ LEVELS_123 = {1: "1 — normal", 2: "2 — above normal", 3: "3 — well above n
 
 @st.cache_resource(show_spinner="Starting CardioAgent (training the models, ~3 seconds)...")
 def load_agent():
-    # Created once, then reused for every click (Streamlit re-runs this script on each interaction).
     return CardioAgent()
 
 
 agent = load_agent()
 
-# ----------------------------------------------------------------------------- sidebar: SENSORS
 st.sidebar.title("❤️ CardioAgent")
 st.sidebar.caption("Heart disease risk advisor · CS582 project")
 
-# ?example=1 in the URL opens the app with example 1 loaded (handy for presentations)
 try:
     start = min(max(int(st.query_params.get("example", 0)), 0), len(EXAMPLES) - 1)
 except ValueError:
@@ -49,7 +38,7 @@ except ValueError:
 example_name = st.sidebar.selectbox("Load an example patient", list(EXAMPLES), index=start)
 ex = EXAMPLES[example_name] or dict(age_years=50, is_male=1, height_cm=170, weight_kg=75, ap_hi=120, ap_lo=80,
                                     cholesterol=1, gluc=1, smoke=0, alco=0, active=1)
-key = example_name          # new widget keys per example, so loading an example resets the inputs
+key = example_name
 
 mode = st.sidebar.radio("Assessment", ["Full (11 values, with advice)", "Quick screening (3 values)"], key="mode")
 quick = mode.startswith("Quick")
@@ -75,10 +64,8 @@ if not quick:
     patient["alco"] = int(st.sidebar.checkbox("Drinks alcohol", bool(ex["alco"]), key=f"alco{key}"))
     patient["active"] = int(st.sidebar.checkbox("Physically active", bool(ex["active"]), key=f"act{key}"))
 
-# ----------------------------------------------------------------------------- PERCEIVE + THINK
 result = agent.assess(patient)
 
-# ----------------------------------------------------------------------------- ACT: the report
 st.title("CardioAgent: heart disease risk advisor")
 st.caption("Enter checkup values on the left. The agent estimates the risk, explains it, and searches for the "
            "easiest lifestyle changes that would lower it.")
@@ -132,13 +119,14 @@ if result["what_if"]:
     colours = alt.Scale(domain=["current", "change", "no benefit in model"], range=["#d62728", "#1f77b4", "#bbbbbb"])
     base = alt.Chart(wf).encode(
         y=alt.Y("change:N", sort=None, title=None, axis=alt.Axis(labelLimit=400, labelFontSize=13)),
-        x=alt.X("risk:Q", title="Estimated risk", axis=alt.Axis(format="%"), scale=alt.Scale(domain=[0, 1])),
+        x=alt.X("risk:Q", title="Estimated risk", axis=alt.Axis(format="%", values=[0, 0.2, 0.4, 0.6, 0.8, 1]),
+                scale=alt.Scale(domain=[0, 1])),
     )
-    bars = base.mark_bar(height=22).encode(color=alt.Color("kind:N", scale=colours, legend=None))
-    labels = base.mark_text(align="left", dx=4, fontSize=13).encode(text="label:N")
+    bars = base.mark_bar().encode(color=alt.Color("kind:N", scale=colours, legend=None))
+    labels = base.mark_text(align="left", dx=4, fontSize=13, color="#888888").encode(text="label:N")
     rule = (alt.Chart(pd.DataFrame({"t": [result["threshold"]]}))
-            .mark_rule(strokeDash=[4, 4], color="black").encode(x="t:Q"))
-    st.altair_chart((bars + labels + rule).properties(height=38 * len(wf)), width="stretch")
+            .mark_rule(strokeDash=[4, 4], color="#888888").encode(x="t:Q"))
+    st.altair_chart((bars + labels + rule).properties(height=alt.Step(36)), width="stretch")
     st.caption("Dashed line = follow-up threshold."
                + (" Grey bars: the model predicted a rise after a healthy change, which the agent's medical rules "
                   "do not allow it to display, so it shows no benefit instead."
